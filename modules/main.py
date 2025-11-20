@@ -27,7 +27,7 @@ from pyrogram.errors import FloodWait
 from pyrogram.errors.exceptions.bad_request_400 import StickerEmojiInvalid
 from pyrogram.types.messages_and_media import message
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
-
+import importlib.util
 # Initialize the bot
 bot = Client(
     "bot",
@@ -35,7 +35,23 @@ bot = Client(
     api_hash=API_HASH,
     bot_token=BOT_TOKEN
 )
+# ←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+# Add this function kahin bhi upar (imports ke neeche)
+import importlib.util
+import os
 
+def download_via_headers_py(url):
+    """headers.py ko direct call karta hai same folder se"""
+    headers_path = os.path.join(os.path.dirname(__file__), "headers.py")
+    if not os.path.exists(headers_path):
+        print("headers.py not found!")
+        return False
+    
+    spec = importlib.util.spec_from_file_location("headers", headers_path)
+    headers_module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(headers_module)
+    return headers_module.download_with_classx_headers(url)
+# ←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
 my_name = "Manish"
 
 cookies_file_path = os.getenv("COOKIES_FILE_PATH", "youtube_cookies.txt")
@@ -291,16 +307,26 @@ async def txt_handler(bot: Client, m: Message):
                 url = url.split("bcov_auth")[0]+bcov
                 
             elif "https://static-trans-v1.classx.co.in" in url or "https://static-trans-v2.classx.co.in" in url:
-                base_with_params, signature = url.split("*")
-
-                base_clean = base_with_params.split(".mkv")[0] + ".mkv"
+               print(f"Protected ClassX URL found! Sending to headers.py → {url[:80]}...")
+                success = download_via_headers_py(url)
+                if success:
+                    count += 1
+                    await m.reply_text(f"Downloaded via headers.py:\n`{name}.mp4`")
+                else:
+                    await m.reply_text(f"Failed via headers.py:\n`{url}`")
+                continue  # Agla link pe jao
 
                 if "static-trans-v1.classx.co.in" in url:
                     base_clean = base_clean.replace("https://static-trans-v1.classx.co.in", "https://appx-transcoded-videos-mcdn.akamai.net.in")
                 elif "static-trans-v2.classx.co.in" in url:
-                    base_clean = base_clean.replace("https://static-trans-v2.classx.co.in", "https://transcoded-videos-v2.classx.co.in")
-
-                url = f"{base_clean}*{signature}"
+                   print(f"Protected ClassX URL found! Sending to headers.py → {url[:80]}...")
+                success = download_via_headers_py(url)
+                if success:
+                    count += 1
+                    await m.reply_text(f"Downloaded via headers.py:\n`{name}.mp4`")
+                else:
+                    await m.reply_text(f"Failed via headers.py:\n`{url}`")
+                continue  # Agla link pe jao
             
             elif "https://static-rec.classx.co.in/drm/" in url:
                 base_with_params, signature = url.split("*")
@@ -322,11 +348,17 @@ async def txt_handler(bot: Client, m: Message):
                 if "*" in url:
                     base_url, key = url.split("*", 1)
                     base_url = base_url.split("?")[0]
-                    base_url = base_url.replace("https://static-db.classx.co.in", "https://appxcontent.kaxa.in")
+                    base_url = base_url.replace("https://static-db-v2.classx.co.in", "https://appx-content-v2.classx.co.in")
                     url = f"{base_url}*{key}"
                 else:
                     base_url = url.split("?")[0]
-                    url = base_url.replace("https://static-db.classx.co.in", "https://appxcontent.kaxa.in")
+                    url = base_url.replace("https://static-db-v2.classx.co.in", "https://appx-content-v2.classx.co.in")
+
+            # ←←←← YEH NAYA CODE YAHAN DAAL DO ←←←←
+            if any(d in url for d in ["static-trans-v", "static-db", "static-rec.classx.co.in"]):
+                await m.reply_text(f"Protected Link Detected!\nDownloading via headers.py...")
+                download_via_headers_py(url)
+                count += 1
 
 
             elif "https://static-db-v2.classx.co.in/" in url:
@@ -338,7 +370,12 @@ async def txt_handler(bot: Client, m: Message):
                 else:
                     base_url = url.split("?")[0]
                     url = base_url.replace("https://static-db-v2.classx.co.in", "https://appx-content-v2.classx.co.in")
-                           
+
+            # ←←←← YEH NAYA CODE YAHAN DAAL DO ←←←←
+            if any(d in url for d in ["static-trans-v", "static-db", "static-rec.classx.co.in"]):
+                await m.reply_text(f"Protected Link Detected!\nDownloading via headers.py...")
+                download_via_headers_py(url)
+                count += 1
             if "youtu" in url:
                 ytf = f"b[height<={raw_text2}][ext=mp4]/bv[height<={raw_text2}][ext=mp4]+ba[ext=m4a]/b[ext=mp4]"
             else:
