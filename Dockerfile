@@ -9,6 +9,7 @@ RUN pip install -r requirements.txt
 COPY . .
 RUN python3 -m pip check yt-dlp
 RUN pip install pytube
+RUN pip install yt-dlp
 ENV COOKIES_FILE_PATH="youtube_cookies.txt"
 
 CMD gunicorn app:app & python3 modules/main.py
