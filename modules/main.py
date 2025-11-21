@@ -291,29 +291,15 @@ async def txt_handler(bot: Client, m: Message):
                 url = url.split("bcov_auth")[0]+bcov
                 
             elif "https://static-trans-v1.classx.co.in" in url or "https://static-trans-v2.classx.co.in" in url:
-                base_with_params, signature = url.split("*")
-cmd = [
-                    "yt-dlp",
-                    "--referer", "https://appx-play.akamai.net.in/",
-                    "--user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-                    "--add-header", "Origin:https://appx-play.akamai.net.in",
-                    "-o", f"{title}.mp4",
-                    clean_url
-                ]
-                base_clean = base_with_params.split(".mkv")[0] + ".mkv"
+                download_with_headers, signature = url.split("*")
+
+                base_clean = download_with_headers.split(".mkv")[0] + ".mkv"
 
                 if "static-trans-v1.classx.co.in" in url:
                     base_clean = base_clean.replace("https://static-trans-v1.classx.co.in", "https://appx-transcoded-videos-mcdn.akamai.net.in")
                 elif "static-trans-v2.classx.co.in" in url:
                     base_clean = base_clean.replace("https://static-trans-v2.classx.co.in", "https://transcoded-videos-v2.classx.co.in")
-cmd = [
-                    "yt-dlp",
-                    "--referer", "https://appx-play.akamai.net.in/",
-                    "--user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-                    "--add-header", "Origin:https://appx-play.akamai.net.in",
-                    "-o", f"{title}.mp4",
-                    clean_url
-                ]
+
                 url = f"{base_clean}*{signature}"
             
             elif "https://static-rec.classx.co.in/drm/" in url:
@@ -348,7 +334,7 @@ cmd = [
                     base_url, key = url.split("*", 1)
                     base_url = base_url.split("?")[0]
                     base_url = base_url.replace("https://static-db-v2.classx.co.in", "https://appx-content-v2.classx.co.in")
-                    url = f"{base_url}*{key}"
+                    url = f"{base_url,headers=headers.cmd}*{key}"
                 else:
                     base_url = url.split("?")[0]
                     url = base_url.replace("https://static-db-v2.classx.co.in", "https://appx-content-v2.classx.co.in")
